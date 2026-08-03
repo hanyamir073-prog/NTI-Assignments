@@ -1,156 +1,68 @@
-#define  F_CPU 8000000UL
+#define F_CPU 8000000UL
+
+#include <avr/io.h>
 #include <util/delay.h>
-  
-  
- #include "STD_TYPES.h"
-#include "DIO.h"
-#include "LCD.h"
-#include "keypad.h"
-#include "UART.h"
 
+int main(void)
+{
+	signed char i;
 
-
-
-
-int main(void) {
-	 u8 Key; u8 count = 0;
-	
-	u8 password[4] = {'1', '2', '3', '4'};
-
-	u8 entered[4];
-
-	DIO_SetPortDirection(PORT_D, OUTPUT); 
-	DIO_SetPinDirection(PORT_C, 5, OUTPUT);
-	DIO_SetPinDirection(PORT_C, 4, OUTPUT);
-	DIO_SetPinDirection(PORT_C, 7, OUTPUT);
-	
-	DIO_SetPinDirection(PORT_B, 2, OUTPUT);
+	unsigned char seven_segment[10] =
+	{
+		0x3F, /* 0 */
+		0x06, /* 1 */
+		0x5B, /* 2 */
+		0x4F, /* 3 */
+		0x66, /* 4 */
+		0x6D, /* 5 */
+		0x7D, /* 6 */
+		0x07, /* 7 */
+		0x7F, /* 8 */
+		0x6F  /* 9 */
+	};
 
 	
-	
-	
-	lcd_init();
-	_delay_ms(500);
-lcd_send_string((u8*)"Enter Password:");
+	DDRA = 0x07;
 
+	
+	DDRC = 0xFF;
+	DDRD = 0xFF;
 
 	while (1)
 	{
 		
-		DIO_SetPinValue(PORT_B, 2, HIGH); 
-		_delay_ms(500);
-		DIO_SetPinValue(PORT_B, 2, LOW);  
-		_delay_ms(500);
+		PORTA = (1 << PA2);
 
-
-Key = Keypad();
-
-
-if (Key != 255 && count < 4)
-{
-	
-	entered[count] = Key;
-
-	
-	lcd_send_data('*');
-
-	
-	count++;
-}
-	
-	if (count == 4)
-	{
-		
-		if (entered[0] == password[0] &&
-		entered[1] == password[1] &&
-		entered[2] == password[2] &&
-		entered[3] == password[3])
+		for (i = 10; i >= 1; i--)
 		{
-			lcd_send_command(0xC0);
-			lcd_send_string((u8*)"Access Granted");
+			PORTC = seven_segment[i / 10]; 
+			PORTD = seven_segment[i % 10]; 
 
-			DIO_SetPinValue(PORT_B, 2, HIGH);
-		}
-		else
-		{
-			lcd_send_command(0xC0);
-			lcd_send_string((u8*)"Wrong Password");
-
-			DIO_SetPinValue(PORT_B, 2, LOW);
+			_delay_ms(1000);
 		}
 
+		
+		PORTA = (1 << PA1);
 
-		_delay_ms(3000);
+		for (i = 3; i >= 1; i--)
+		{
+			PORTC = seven_segment[i / 10];
+			PORTD = seven_segment[i % 10];
 
-		lcd_send_command(0x01);
+			_delay_ms(1000);
+		}
 
 		
-		lcd_send_string((u8*)"Enter Password:");
+		PORTA = (1 << PA0);
 
-		
-		count = 0;
+		for (i = 10; i >= 1; i--)
+		{
+			PORTC = seven_segment[i / 10];
+			PORTD = seven_segment[i % 10];
 
-
-	    }
+			_delay_ms(1000);
+		}
 	}
+
+	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
